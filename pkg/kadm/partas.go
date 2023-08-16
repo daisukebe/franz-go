@@ -2,6 +2,7 @@ package kadm
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
 	"github.com/twmb/franz-go/pkg/kerr"
@@ -80,6 +81,7 @@ func (cl *Client) AlterPartitionAssignments(ctx context.Context, req AlterPartit
 	kreq := kmsg.NewPtrAlterPartitionAssignmentsRequest()
 	kreq.TimeoutMillis = cl.timeoutMillis
 	for t, ps := range req {
+		fmt.Printf("Requested topic: %v, partitions: %v\n", t, ps)
 		rt := kmsg.NewAlterPartitionAssignmentsRequestTopic()
 		rt.Topic = t
 		for p, bs := range ps {
@@ -92,6 +94,7 @@ func (cl *Client) AlterPartitionAssignments(ctx context.Context, req AlterPartit
 	}
 
 	kresp, err := kreq.RequestWith(ctx, cl.cl)
+	fmt.Printf("Responds: %v\n", kresp)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +104,7 @@ func (cl *Client) AlterPartitionAssignments(ctx context.Context, req AlterPartit
 
 	a := make(AlterPartitionAssignmentsResponses)
 	for _, kt := range kresp.Topics {
+		fmt.Printf("kt: topic %v, partitions %v\n", kt.Topic, kt.Partitions)
 		ps := make(map[int32]AlterPartitionAssignmentsResponse)
 		a[kt.Topic] = ps
 		for _, kp := range kt.Partitions {
